@@ -1,31 +1,61 @@
-import { StatusBar } from 'expo-status-bar';
-import { ImageBackground, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
-import searchInput from './components/searchInput';
+import React from 'react';
+import {KeyboardAvoidingView,ImageBackground, Platform, StyleSheet, Text, View, ActivityIndicator,StatusBar} from 'react-native';
+import SearchInput from './components/searchInput'; 
 import getImageWeather from './utils/getImageWeather';
+import { fetchLocationId,fetchWeather } from './utils/api';
 
-export default function App() {
-  return (
+export default class App extends React.Component{
+
+    constructor(props){
+      super(props)
+      this.setState = {
+        loading:false,
+        error:false,
+        location: ' ',
+        weather: ' ',
+        temperature: 0,
+    };
+  }
+
+  componentDidMount(){
+    this.handleUpdateLocation('Dubai');
+  }
     handleUpdateLocation = async city =>{
       if(!city) return ;
-      this.setSate({loading: true}, async () =>{
+      this.setState({loading: true}, async () =>{
         try
-        { const locationId= await fetchLocationId(city);
+        { 
+          const locationId= await fetchLocationId(city);
           const {location,weather,temperature} = await fetchWeather(locationId,weather,temperature);
-        }
-        finally
-        {
-          
-        }
-      }
-      )
+
+          this.setState({
+            loading:false,
+            error:false,
+            location,
+            weather,
+            temperature,
+
+          });
+        } catch(e){
+          this.setState({
+            loading:false,
+            error:true,
+        });
     }
+  });
+};
+    render() {
+      const {
+      loading,
+      error,
+      location,
+      weather,
+      temperature,
+      }= this.setState;
 
-    
-      )
-
-  
-}
+      return(
     <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <StatusBar barStyle="light-content"/>
     <ImageBackground
     source={getImageWeather(weather)}
     style={styles.imageContainer}
@@ -34,11 +64,39 @@ export default function App() {
       <Text style={[styles.textStyle,styles.largeText]}>SHANGHAI</Text>
       <Text style={[styles.smallText,styles.textStyle]}>Light Cloud</Text>
       <Text style={[styles.smallText,styles.textStyle]}>23 Degrees</Text>
-    <searchInput placeholder="search any city" onSubmit={this.handleUpdateLocation}/>
-    </View>
+    
+      <ActivityIndicator animating={loading} color='white' size="large" />
+      {!loading && (
+        <View>
+          {error &&(
+              <Text style={[styles.largeText,styles.textStyle]}>
+          Could not load weather, Please try a Different city.
+          </Text>    
+          )}
+          {
+            !error &&(
+              <View>
+                  <Text style={[styles.smallText,styles.textStyle]}>
+                    {location}
+                  </Text>
+                  <Text style={[styles.smallText,styles.textStyle]}>
+                    {weather}
+                  </Text>
+                  <Text style={[styles.smallText,styles.textStyle]}>
+                    {`${Math.round(temperature)}°`}
+                  </Text>
+              </View>
+            )
+          }
+          <searchInput placeholder="search any city" onSubmit={this.handleUpdateLocation}/>
+        </View>
+  )}
+  </View>
     </ImageBackground>
     </KeyboardAvoidingView>
-
+  );
+}
+    }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -71,5 +129,13 @@ const styles = StyleSheet.create({
         marginHorizontal:20,
         paddingHorizontal:10,
         alignSelf:'center',
-  }
+  },
+  imageContainer:{
+    flex:1,
+  },
+  image:{
+    flex:1,
+    width:null,
+    resizeMode:'cover',
+  },
 });

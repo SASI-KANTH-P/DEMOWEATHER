@@ -2,7 +2,9 @@ import React from 'react';
 import {StyleSheet,View,TextInput} from 'react-native';
 import PropTypes from 'prop-types';
 
-export default class searchInput extends React.Component{
+export default class SearchInput extends React.Component{
+
+
     static prototypes = {
         onSubmit: PropTypes.func.isRequired,
         placeholder:PropTypes.string,
@@ -30,7 +32,7 @@ export default class searchInput extends React.Component{
     }
     render(){
         const {placeholder}=this.props;
-        const {text}=this.text;
+        const {text}=this.state;
         return(
 <view styles={styles.container}>
 <TextInput
@@ -56,7 +58,12 @@ const styles= StyleSheet.create({
         marginTop:25,
         marginHorizontal:20,
         paddingHorizontal:10,
-        alignSelf:'center',      
-    }
-
+        alignSelf:'center',
+        borderRadius:5,      
+    },
+    
+    textinput:{
+      flex:1,
+      color:'white',
+    },
 })
